@@ -555,6 +555,32 @@ struct TalkModeManagerTests {
         #expect(routing.route == .realtimeRelay)
     }
 
+    @Test func `cantonese ai selection routes through gateway talk speak`() {
+        let config: [String: Any] = [
+            "talk": [
+                "provider": "cantonese-ai",
+                "providers": [
+                    "cantonese-ai": ["voiceId": "voice-1"],
+                ],
+            ],
+        ]
+        let parsed = TalkModeGatewayConfigParser.parse(
+            config: config,
+            defaultProvider: "elevenlabs",
+            defaultModelIdFallback: "eleven_v3",
+            defaultRealtimeModelIdFallback: "gpt-realtime-2",
+            defaultSilenceTimeoutMs: 900)
+        let routing = TalkModeRoutingResolver.resolve(
+            parsed: parsed,
+            providerSelection: .cantoneseAi,
+            defaultProvider: "elevenlabs",
+            defaultRealtimeModelId: "gpt-realtime-2")
+
+        #expect(routing.route == .gatewayTalkSpeak)
+        #expect(routing.activeProvider == "cantonese-ai")
+        #expect(routing.executionMode == .native)
+    }
+
     @Test func `restarts an enabled continuous realtime session after provider close`() {
         #expect(TalkModeManager._test_shouldRestartRealtimeSession(
             isEnabled: true,

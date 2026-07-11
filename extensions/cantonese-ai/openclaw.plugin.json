@@ -1,0 +1,35 @@
+{
+  "id": "cantonese-ai",
+  "activation": {
+    "onStartup": false
+  },
+  "enabledByDefault": true,
+  "setup": {
+    "providers": [
+      {
+        "id": "cantonese-ai",
+        "envVars": ["CANTONESE_AI_API_KEY"]
+      }
+    ]
+  },
+  "contracts": {
+    "speechProviders": ["cantonese-ai"],
+    "mediaUnderstandingProviders": ["cantonese-ai"]
+  },
+  "mediaUnderstandingProviderMetadata": {
+    "cantonese-ai": {
+      "capabilities": ["audio"],
+      "defaultModels": {
+        "audio": "v2"
+      },
+      "autoPriority": {
+        "audio": 40
+      }
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

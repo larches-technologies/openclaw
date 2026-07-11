@@ -1321,7 +1321,8 @@ final class TalkModeManager: NSObject {
         let localSpeechLocale = UserDefaults.standard.string(forKey: TalkSpeechLocale.storageKey)
         let resolvedSpeech = TalkSpeechLocale.makeRecognizer(
             localSelection: localSpeechLocale,
-            gatewaySelection: self.gatewaySpeechLocaleID)
+            gatewaySelection: self.gatewaySpeechLocaleID,
+            providerPreferredLocaleID: self.talkProviderSelection.preferredSpeechLocaleID)
         self.speechRecognizer = resolvedSpeech.recognizer
         guard let recognizer = speechRecognizer else {
             throw NSError(domain: "TalkMode", code: 1, userInfo: [
@@ -3517,6 +3518,8 @@ extension TalkModeManager {
         switch provider.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
         case "elevenlabs":
             "ElevenLabs"
+        case "cantonese-ai":
+            "Cantonese.ai"
         case "openai":
             "OpenAI"
         case "google":
