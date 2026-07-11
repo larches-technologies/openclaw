@@ -51,6 +51,12 @@ Supported keys: `voice` / `voice_id` / `voiceId`, `model` / `model_id` / `modelI
   talk: {
     provider: "elevenlabs",
     providers: {
+      "cantonese-ai": {
+        voiceId: "cantonese_ai_voice_id",
+        modelId: "v6",
+        outputExtension: "wav",
+        apiKey: "cantonese_ai_api_key",
+      },
       elevenlabs: {
         voiceId: "elevenlabs_voice_id",
         modelId: "eleven_v3",
@@ -85,8 +91,11 @@ Supported keys: `voice` / `voice_id` / `voiceId`, `model` / `model_id` / `modelI
 
 | Key                                      | Default                                    | Notes                                                                                                                                                                                                                                                                      |
 | ---------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `provider`                               | -                                          | Active Talk TTS provider. Use `elevenlabs`, `mlx`, or `system` for macOS-local playback paths.                                                                                                                                                                             |
+| `provider`                               | -                                          | Active Talk TTS provider. Use `elevenlabs`, `mlx`, or `system` for macOS-local playback paths, or `cantonese-ai` for gateway Cantonese synthesis.                                                                                                                          |
 | `providers.<id>.voiceId`                 | -                                          | ElevenLabs falls back to `ELEVENLABS_VOICE_ID` / `SAG_VOICE_ID`, or the first available voice with an API key.                                                                                                                                                             |
+| `providers.cantonese-ai.apiKey`          | -                                          | Cantonese.ai API key; falls back to `CANTONESE_AI_API_KEY`. Selecting `Cantonese.ai` in the iOS Talk provider picker routes TTS through this gateway provider and prefers on-device `zh-HK` speech recognition.                                                            |
+| `providers.cantonese-ai.modelId`         | service default                            | Cantonese.ai TTS model generation (`v2`-`v6`); `v5`/`v6` also accept Jyutping guidance. Left unset lets the service pick its default.                                                                                                                                      |
+| `providers.cantonese-ai.outputExtension` | `wav`                                      | Cantonese.ai audio container: `wav` or `mp3`.                                                                                                                                                                                                                              |
 | `providers.elevenlabs.modelId`           | `eleven_v3`                                |                                                                                                                                                                                                                                                                            |
 | `providers.mlx.modelId`                  | `mlx-community/Soprano-80M-bf16`           |                                                                                                                                                                                                                                                                            |
 | `providers.elevenlabs.apiKey`            | -                                          | Falls back to `ELEVENLABS_API_KEY` (or gateway shell profile if available).                                                                                                                                                                                                |

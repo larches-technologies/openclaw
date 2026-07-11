@@ -197,6 +197,7 @@ enum TalkVoiceModeDescriptorBuilder {
 enum TalkModeProviderSelection: String, CaseIterable, Identifiable {
     case gatewayDefault = "gateway"
     case nativeElevenLabs = "elevenlabs"
+    case cantoneseAi = "cantonese-ai"
     case openAIRealtime = "openai-realtime"
 
     static let storageKey = "talk.providerSelection"
@@ -211,8 +212,22 @@ enum TalkModeProviderSelection: String, CaseIterable, Identifiable {
             "Gateway Default"
         case .nativeElevenLabs:
             "ElevenLabs"
+        case .cantoneseAi:
+            "Cantonese.ai"
         case .openAIRealtime:
             "Realtime-2 (OpenAI)"
+        }
+    }
+
+    /// Speech recognizer locale to prefer for on-device (Apple Speech) transcription
+    /// when this provider is selected. Cantonese.ai only synthesizes speech, so STT
+    /// stays on-device; picking it signals the user wants Cantonese recognition.
+    var preferredSpeechLocaleID: String? {
+        switch self {
+        case .cantoneseAi:
+            "zh-HK"
+        default:
+            nil
         }
     }
 
@@ -278,6 +293,12 @@ enum TalkModeRoutingResolver {
         case .nativeElevenLabs:
             activeProvider = defaultProvider
             route = .localElevenLabs
+        case .cantoneseAi:
+            // Cantonese.ai TTS only runs gateway-side (no on-device SDK), so always
+            // synthesize through talk.speak. The gateway must configure
+            // talk.provider = "cantonese-ai" for this audio to come back Cantonese.
+            activeProvider = "cantonese-ai"
+            route = .gatewayTalkSpeak
         case .openAIRealtime:
             activeProvider = "openai"
             realtimeProvider = "openai"

@@ -5894,6 +5894,14 @@ Do not edit it by hand; run `pnpm docs:map:gen`.
   - H2: Distribution
   - H2: Surface
 
+## plugins/reference/cantonese-ai.md
+
+- Route: /plugins/reference/cantonese-ai
+- Headings:
+  - H1: Cantonese AI plugin
+  - H2: Distribution
+  - H2: Surface
+
 ## plugins/reference/canvas.md
 
 - Route: /plugins/reference/canvas

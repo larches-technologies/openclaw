@@ -28,6 +28,11 @@ export const pluginRegistrationContractCases = {
     videoGenerationProviderIds: ["byteplus"],
     requireGenerateVideo: true,
   },
+  "cantonese-ai": {
+    pluginId: "cantonese-ai",
+    speechProviderIds: ["cantonese-ai"],
+    mediaUnderstandingProviderIds: ["cantonese-ai"],
+  },
   comfy: {
     pluginId: "comfy",
     providerIds: ["comfy"],

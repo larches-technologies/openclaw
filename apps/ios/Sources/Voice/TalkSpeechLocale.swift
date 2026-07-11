@@ -31,14 +31,18 @@ enum TalkSpeechLocale {
     static func resolvedLocaleID(
         localSelection: String?,
         gatewaySelection: String?,
+        providerPreferredLocaleID: String? = nil,
         deviceLocaleID: String = Locale.autoupdatingCurrent.identifier,
         fallbackLocaleID: String = Self.fallbackLocaleID,
         supportedLocaleIDs: Set<String>) -> String?
     {
         TalkConfigParsing.resolvedSpeechRecognitionLocaleID(
             preferredLocaleIDs: [
+                // Explicit user/gateway locale wins; the provider preference only
+                // fills in when neither pins a locale (for example Cantonese.ai -> zh-HK).
                 TalkConfigParsing.normalizedExplicitSpeechLocaleID(localSelection),
                 TalkConfigParsing.normalizedExplicitSpeechLocaleID(gatewaySelection),
+                TalkConfigParsing.normalizedExplicitSpeechLocaleID(providerPreferredLocaleID),
                 deviceLocaleID,
             ],
             fallbackLocaleID: fallbackLocaleID,
@@ -48,6 +52,7 @@ enum TalkSpeechLocale {
     static func makeRecognizer(
         localSelection: String?,
         gatewaySelection: String?,
+        providerPreferredLocaleID: String? = nil,
         supportedLocales: Set<Locale> = SFSpeechRecognizer.supportedLocales()) -> (
         recognizer: SFSpeechRecognizer?,
         localeID: String?)
@@ -56,6 +61,7 @@ enum TalkSpeechLocale {
         guard let localeID = self.resolvedLocaleID(
             localSelection: localSelection,
             gatewaySelection: gatewaySelection,
+            providerPreferredLocaleID: providerPreferredLocaleID,
             supportedLocaleIDs: supportedIDs)
         else {
             let recognizer = SFSpeechRecognizer()
