@@ -120,7 +120,10 @@ export function buildXaiImageGenerationProvider(): ImageGenerationProvider {
     },
     defaultBaseUrl: XAI_BASE_URL,
     resolveBaseUrl: ({ req }) => resolveXaiImageBaseUrl(req),
-    resolveAllowPrivateNetwork: () => false,
+    // Use the xAI provider's scoped request transport configuration. This stays
+    // fail-closed unless models.providers.xai.request.allowPrivateNetwork is
+    // explicitly set, including when baseUrl targets a private CLI proxy.
+    useConfiguredRequest: true,
     defaultTimeoutMs: DEFAULT_TIMEOUT_MS,
     buildGenerateRequest: ({ req, inputImages, model, count }) => ({
       kind: "json",

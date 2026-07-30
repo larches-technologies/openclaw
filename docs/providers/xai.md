@@ -317,6 +317,42 @@ stale context metadata on active 4.20 rows. It does not pin active 4.20
     }
     ```
 
+    ### Trusted private CLIProxy endpoint
+
+    Image requests are SSRF-protected and **private/internal destinations are
+    blocked by default**. If you deliberately run a trusted local CLIProxy—for
+    example a Grok Imagine proxy at `http://localhost:8317/v1`—use the xAI
+    provider's narrow request opt-in:
+
+    ```json5
+    {
+      models: {
+        providers: {
+          xai: {
+            baseUrl: "http://localhost:8317/v1",
+            request: { allowPrivateNetwork: true },
+          },
+        },
+      },
+    }
+    ```
+
+    This enables only xAI HTTP media requests (including
+    `/images/generations` and `/images/edits`) to use that configured private
+    endpoint. It does not relax browser navigation, `web_fetch`, or any other
+    provider. The same provider-scoped `request` object can configure request
+    headers, auth, proxy, and TLS controls. Treat the proxy as trusted: this
+    setting permits its configured endpoint to receive the xAI authorization
+    header. Do not set it for an untrusted or user-controlled base URL.
+
+    On builds before this support ships, the temporary local patch script at
+    `scripts/xai-image-private-network-patch.sh` patches only the installed xAI
+    image bundle. Run `--check` first, keep its timestamped backup, and rerun
+    it after every OpenClaw upgrade only if the release still lacks the fix.
+    Use `--restore` to roll back the most recent backup. The script never
+    changes configuration or restarts the gateway; add the configuration above
+    separately and restart only through your normal approved maintenance path.
+
     <Note>
     xAI also documents `quality`, `mask`, `user`, and an `auto` aspect ratio.
     OpenClaw forwards only the shared cross-provider image controls today;

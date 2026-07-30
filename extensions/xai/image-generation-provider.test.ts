@@ -23,6 +23,10 @@ const {
   postMultipartRequestMock: vi.fn(),
   assertOkOrThrowHttpErrorMock: vi.fn(async () => {}),
   resolveProviderHttpRequestConfigMock: vi.fn((params: Record<string, unknown>) => {
+    const request =
+      typeof params.request === "object" && params.request !== null
+        ? (params.request as Record<string, unknown>)
+        : undefined;
     const headers = new Headers(params.defaultHeaders as HeadersInit | undefined);
     // Stub mirroring the xAI attribution policy headers (real wire is locked in provider-attribution.test.ts).
     if (params.provider === "xai") {
@@ -33,7 +37,7 @@ const {
     }
     return {
       baseUrl: params.baseUrl ?? params.defaultBaseUrl ?? "https://api.x.ai/v1",
-      allowPrivateNetwork: false,
+      allowPrivateNetwork: (params.allowPrivateNetwork ?? request?.allowPrivateNetwork) === true,
       headers,
       dispatcherPolicy: undefined,
     };
@@ -91,6 +95,7 @@ function requirePostJsonCall(index = 0): {
   timeoutMs?: number;
   body?: Record<string, unknown>;
   headers?: Headers;
+  allowPrivateNetwork?: boolean;
 } {
   const params = (postJsonRequestMock.mock.calls as unknown as Array<[unknown]>)[index]?.[0] as
     | {
@@ -192,11 +197,15 @@ describe("xai image generation provider", () => {
           provider?: string;
           capability?: string;
           baseUrl?: string;
+          request?: { allowPrivateNetwork?: boolean };
+          allowPrivateNetwork?: boolean;
         }
       | undefined;
     expect(httpParams?.provider).toBe("xai");
     expect(httpParams?.capability).toBe("image");
     expect(httpParams?.baseUrl).toBe("https://custom.x.ai/v1");
+    expect(httpParams?.request).toBeUndefined();
+    expect(httpParams).not.toHaveProperty("allowPrivateNetwork");
     const request = requirePostJsonCall();
     expect(request.url).toContain("/images/generations");
     expect(provider.defaultTimeoutMs).toBe(600_000);
@@ -208,6 +217,67 @@ describe("xai image generation provider", () => {
         defaultTimeoutMs: 600_000,
       }),
     );
+  });
+
+  it("keeps a private xAI image base URL blocked unless the provider request opts in", async () => {
+    postJsonRequestMock.mockResolvedValue({
+      response: jsonResponse({ data: [{ b64_json: Buffer.from("testpng").toString("base64") }] }),
+      release: vi.fn(async () => {}),
+    });
+
+    const provider = buildXaiImageGenerationProvider();
+    await provider.generateImage({
+      provider: "xai",
+      model: "grok-imagine-image",
+      prompt: "strict private endpoint check",
+      cfg: { models: { providers: { xai: { baseUrl: "http://localhost:8317/v1", models: [] } } } },
+    } as GenerateImageParams);
+
+    expect(resolveProviderHttpRequestConfigMock).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: "xai", capability: "image", request: undefined }),
+    );
+    expect(resolveProviderHttpRequestConfigMock.mock.calls[0]?.[0]).not.toHaveProperty(
+      "allowPrivateNetwork",
+    );
+    expect(requirePostJsonCall().allowPrivateNetwork).toBe(false);
+  });
+
+  it("allows a private xAI image base URL only through its configured request opt-in", async () => {
+    postJsonRequestMock.mockResolvedValue({
+      response: jsonResponse({ data: [{ b64_json: Buffer.from("testpng").toString("base64") }] }),
+      release: vi.fn(async () => {}),
+    });
+
+    const provider = buildXaiImageGenerationProvider();
+    await provider.generateImage({
+      provider: "xai",
+      model: "grok-imagine-image",
+      prompt: "trusted private endpoint check",
+      cfg: {
+        models: {
+          providers: {
+            xai: {
+              baseUrl: "http://localhost:8317/v1",
+              request: { allowPrivateNetwork: true },
+              models: [],
+            },
+          },
+        },
+      },
+    } as GenerateImageParams);
+
+    expect(resolveProviderHttpRequestConfigMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: "xai",
+        capability: "image",
+        baseUrl: "http://localhost:8317/v1",
+        request: { allowPrivateNetwork: true },
+      }),
+    );
+    expect(resolveProviderHttpRequestConfigMock.mock.calls[0]?.[0]).not.toHaveProperty(
+      "allowPrivateNetwork",
+    );
+    expect(requirePostJsonCall().allowPrivateNetwork).toBe(true);
   });
 
   it("supports edit with exact user-provided payload format including image object with type image_url", async () => {
