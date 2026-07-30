@@ -321,8 +321,8 @@ stale context metadata on active 4.20 rows. It does not pin active 4.20
 
     Image requests are SSRF-protected and **private/internal destinations are
     blocked by default**. If you deliberately run a trusted local CLIProxy—for
-    example Aura's Grok Imagine proxy at `http://localhost:8317/v1`—use the
-    xAI provider's narrow request opt-in:
+    example a Grok Imagine proxy at `http://localhost:8317/v1`—use the xAI
+    provider's narrow request opt-in:
 
     ```json5
     {
@@ -340,9 +340,10 @@ stale context metadata on active 4.20 rows. It does not pin active 4.20
     This enables only xAI HTTP media requests (including
     `/images/generations` and `/images/edits`) to use that configured private
     endpoint. It does not relax browser navigation, `web_fetch`, or any other
-    provider. Treat the proxy as trusted: this setting permits its configured
-    endpoint to receive the xAI authorization header. Do not set it for an
-    untrusted or user-controlled base URL.
+    provider. The same provider-scoped `request` object can configure request
+    headers, auth, proxy, and TLS controls. Treat the proxy as trusted: this
+    setting permits its configured endpoint to receive the xAI authorization
+    header. Do not set it for an untrusted or user-controlled base URL.
 
     On builds before this support ships, the temporary local patch script at
     `scripts/xai-image-private-network-patch.sh` patches only the installed xAI

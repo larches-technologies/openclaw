@@ -37,7 +37,7 @@ const {
     }
     return {
       baseUrl: params.baseUrl ?? params.defaultBaseUrl ?? "https://api.x.ai/v1",
-      allowPrivateNetwork: request?.allowPrivateNetwork === true,
+      allowPrivateNetwork: (params.allowPrivateNetwork ?? request?.allowPrivateNetwork) === true,
       headers,
       dispatcherPolicy: undefined,
     };
@@ -95,6 +95,7 @@ function requirePostJsonCall(index = 0): {
   timeoutMs?: number;
   body?: Record<string, unknown>;
   headers?: Headers;
+  allowPrivateNetwork?: boolean;
 } {
   const params = (postJsonRequestMock.mock.calls as unknown as Array<[unknown]>)[index]?.[0] as
     | {
@@ -197,12 +198,14 @@ describe("xai image generation provider", () => {
           capability?: string;
           baseUrl?: string;
           request?: { allowPrivateNetwork?: boolean };
+          allowPrivateNetwork?: boolean;
         }
       | undefined;
     expect(httpParams?.provider).toBe("xai");
     expect(httpParams?.capability).toBe("image");
     expect(httpParams?.baseUrl).toBe("https://custom.x.ai/v1");
     expect(httpParams?.request).toBeUndefined();
+    expect(httpParams).not.toHaveProperty("allowPrivateNetwork");
     const request = requirePostJsonCall();
     expect(request.url).toContain("/images/generations");
     expect(provider.defaultTimeoutMs).toBe(600_000);
@@ -232,6 +235,9 @@ describe("xai image generation provider", () => {
 
     expect(resolveProviderHttpRequestConfigMock).toHaveBeenCalledWith(
       expect.objectContaining({ provider: "xai", capability: "image", request: undefined }),
+    );
+    expect(resolveProviderHttpRequestConfigMock.mock.calls[0]?.[0]).not.toHaveProperty(
+      "allowPrivateNetwork",
     );
     expect(requirePostJsonCall().allowPrivateNetwork).toBe(false);
   });
@@ -267,6 +273,9 @@ describe("xai image generation provider", () => {
         baseUrl: "http://localhost:8317/v1",
         request: { allowPrivateNetwork: true },
       }),
+    );
+    expect(resolveProviderHttpRequestConfigMock.mock.calls[0]?.[0]).not.toHaveProperty(
+      "allowPrivateNetwork",
     );
     expect(requirePostJsonCall().allowPrivateNetwork).toBe(true);
   });

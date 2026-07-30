@@ -223,7 +223,7 @@ export function createOpenAiCompatibleImageGenerationProvider(
       } = resolveProviderHttpRequestConfig({
         baseUrl: resolvedBaseUrl,
         defaultBaseUrl: options.defaultBaseUrl,
-        allowPrivateNetwork,
+        ...(allowPrivateNetwork === undefined ? {} : { allowPrivateNetwork }),
         request: options.useConfiguredRequest
           ? sanitizeConfiguredModelProviderRequest(providerConfig?.request)
           : undefined,
