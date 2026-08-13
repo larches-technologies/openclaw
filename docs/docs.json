@@ -1676,7 +1676,8 @@
                       "gateway/background-process",
                       "gateway/restart-recovery",
                       "gateway/multiple-gateways",
-                      "gateway/multi-tenant-hosting"
+                      "gateway/multi-tenant-hosting",
+                      "gateway/larches-aura-instance-session-workload"
                     ]
                   },
                   {
